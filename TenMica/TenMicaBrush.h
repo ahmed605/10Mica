@@ -36,7 +36,7 @@ using namespace Windows::UI::ViewManagement;
 
 namespace TenMica
 {
-    private enum FullScreenType //FULL_SCREEN_TYPE
+    private enum class FullScreenType //FULL_SCREEN_TYPE
     {
         Standard = 0x0,
         Minimal = 0x1,
@@ -116,6 +116,7 @@ namespace TenMica
         Windows::Foundation::EventRegistrationToken OnEnergySaverStatusChangedCookie;
         Windows::Foundation::EventRegistrationToken OnCompositionCapabilitiesChangedCookie;
         Windows::Foundation::EventRegistrationToken OnWindowPositionChangedCookie;
+        Windows::Foundation::EventRegistrationToken OnDisplayChangedCookie;
 
         void Init();
         ::CompositionBrush^ BuildMicaEffectBrush(Compositor^ compositor, Visual^ src, Color tintColor, float tintOpacity, float luminosityOpacity, SIZE size);
@@ -129,6 +130,7 @@ namespace TenMica
         void OnEnergySaverStatusChanged(Platform::Object^ sender, Platform::Object^ e);
         void OnCompositionCapabilitiesChanged(CompositionCapabilities^ sender, Platform::Object^ args);
         void OnWindowPositionChanged(IInternalCoreWindow2^ window, Platform::Object^ args);
+        void OnDisplayChanged(Windows::UI::Core::CoreWindow^ sender, Platform::Object^ args);
     public:
         TenMicaBrush();
         TenMicaBrush(ApplicationTheme ForcedTheme);

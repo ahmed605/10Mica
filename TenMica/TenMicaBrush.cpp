@@ -199,6 +199,17 @@ void TenMicaBrush::OnConnected()
 
 	// Syncing!!
 	OnWindowPositionChangedCookie = internalW->WindowPositionChanged += ref new TypedEventHandler<IInternalCoreWindow2^, Platform::Object^>(this, &TenMicaBrush::OnWindowPositionChanged);
+
+	IInternalCoreWindow^ internalW1 = (IInternalCoreWindow^)coreWnd; // Pure blue magic
+	OnDisplayChangedCookie = internalW1->DisplayChanged += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Core::CoreWindow^, Platform::Object^>(this, &TenMica::TenMicaBrush::OnDisplayChanged);
+}
+
+void TenMicaBrush::OnDisplayChanged(Windows::UI::Core::CoreWindow^ sender, Platform::Object^ args)
+{
+	sender->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new Windows::UI::Core::DispatchedHandler([this, sender]()
+	{
+		UpdateBrush();
+	}));
 }
 
 void TenMicaBrush::OnWindowPositionChanged(IInternalCoreWindow2^ window, Platform::Object^ args)
@@ -397,6 +408,9 @@ void TenMicaBrush::OnDisconnected()
 				cWindow->Activated -= OnActivatedCookie;
 				IInternalCoreWindow2^ internalW = (IInternalCoreWindow2^)cWindow;
 				internalW->WindowPositionChanged -= OnWindowPositionChangedCookie;
+
+				IInternalCoreWindow^ internalW1 = (IInternalCoreWindow^)cWindow;
+				internalW1->DisplayChanged -= OnDisplayChangedCookie;
 
 				cWindow = null;
 			}
