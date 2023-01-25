@@ -17,9 +17,11 @@ using namespace Platform;
 using namespace Microsoft::WRL;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+using namespace Windows::Devices::Input;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Core;
 using namespace Windows::UI;
+using namespace Windows::UI::Input;
 using namespace Windows::UI::Composition;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Controls::Primitives;
@@ -34,8 +36,34 @@ using namespace Windows::UI::ViewManagement;
 
 namespace TenMica
 {
+    private enum FullScreenType //FULL_SCREEN_TYPE
+    {
+        Standard = 0x0,
+        Minimal = 0x1,
+        SuppressSystemOverlays = 0x2,
+        None = 0x3,
+    };
+
+    [uuid("42a17e3d-7171-439a-b1fa-a31b7b957489")]
+    private interface class IInternalCoreWindow
+    {
+        property MouseDevice^ MouseDevice { ::MouseDevice^ get(); }
+        property int ApplicationViewState { int get(); }
+        property int ApplicationViewOrientation { int get(); }
+        property int AdjacentDisplayEdges { int get(); }
+        property bool IsOnLockScreen{ bool get(); }
+        property PointerVisualizationSettings^ PointerVisualizationSettings { ::PointerVisualizationSettings^ get(); }
+        property CoreWindowResizeManager^ CoreWindowResizeManager { ::CoreWindowResizeManager^ get(); }
+        property bool IsScreenCaptureEnabled;
+        property FullScreenType SuppressSystemOverlays;
+        event TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>^ ThemeChanged;
+        event TypedEventHandler<CoreWindow^, Object^>^ ContextMenuRequested;
+        event TypedEventHandler<CoreWindow^, Object^>^ DisplayChanged;
+        event TypedEventHandler<CoreWindow^, Object^>^ Consolidated;
+    };
+
     [uuid("c12779d8-85d2-43e5-901a-95dd4f8ecba3")]
-    interface class IInternalCoreWindow2
+    private interface class IInternalCoreWindow2
     {
         property Rect LayoutBounds { Rect get(); }
         property Rect VisibleBounds { Rect get(); }

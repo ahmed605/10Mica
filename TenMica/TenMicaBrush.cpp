@@ -68,6 +68,21 @@ void TenMicaBrush::Init()
 
 	var srcSize = Windows::Foundation::Numerics::float2::float2(size.cx, size.cy);
 
+	if (surface != nullptr)
+	{
+		try
+		{
+			Visual^ visual;
+			visual = surface->SourceVisual;
+
+			surface->SourceVisual = nullptr;
+			delete surface;
+			surface = nullptr;
+			delete visual;
+			visual = nullptr;
+		} catch (...) { }
+	}
+
 	surface = compositor->CreateVisualSurface();
 	surface->SourceVisual = src;
 	surface->SourceSize = srcSize;
@@ -406,7 +421,9 @@ void TenMicaBrush::OnDisconnected()
 
 			surface->SourceVisual = null;
 			delete surface;
+			surface = null;
 			delete visual;
+			visual = null;
 		} catch (...) { }
 	}
 }
