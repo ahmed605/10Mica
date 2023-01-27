@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "TenMicaTestWasdk (Package)": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
+    },
+    "TenMicaTestWasdk (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

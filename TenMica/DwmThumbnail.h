@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <dwmapi.h>
+#include <dcomp.h>
 
 enum THUMBNAIL_TYPE
 {
@@ -11,19 +12,6 @@ enum THUMBNAIL_TYPE
 	TT_BITMAPPENDING = 0x3,
 	TT_BITMAP = 0x4
 };
-
-typedef struct _DWM_THUMBNAIL_PROPERTIES
-{
-	DWORD dwFlags;              // Specifies which members of this struct have been specified
-	RECT rcDestination;         // The area in the destination window where the thumbnail will be rendered
-	RECT rcSource;              // The region of the source window to use as the thumbnail.  By default, the entire window is used as the thumbnail
-	BYTE opacity;               // The opacity with which to render the thumbnail.  0 is fully transparent, while 255 is fully opaque.  The default value is 255
-	BOOL fVisible;              // Whether the thumbnail should be visible.  The default is FALSE
-	BOOL fSourceClientAreaOnly; // Whether only the client area of the source window should be included in the thumbnail.  The default is FALSE
-} DWM_THUMBNAIL_PROPERTIES, * PDWM_THUMBNAIL_PROPERTIES;
-
-typedef HANDLE      HTHUMBNAIL;
-typedef HTHUMBNAIL* PHTHUMBNAIL;
 
 typedef HRESULT(WINAPI* DwmpCreateSharedThumbnailVisual)(
 	IN HWND hwndDestination,
@@ -48,73 +36,6 @@ typedef HRESULT(WINAPI* DwmpQueryThumbnailType)(
 #define DWM_TNP_DISABLE3D         0x8000000
 #define DWM_TNP_FORCECVI          0x40000000
 #define DWM_TNP_DISABLEFORCECVI   0x80000000
-
-#pragma region Flags for DWM_THUMBNAIL_PROPERTIES
-#define DWM_TNP_RECTDESTINATION                  0x00000001 // A value for the "rcDestination" member has been specified.
-#define DWM_TNP_RECTSOURCE                       0x00000002 // A value for the "rcSource" member has been specified.
-#define DWM_TNP_OPACITY                          0x00000004 // A value for the "opacity" member has been specified.
-#define DWM_TNP_VISIBLE                          0x00000008 // A value for the "fVisible" member has been specified.
-#define DWM_TNP_SOURCECLIENTAREAONLY             0x00000010 // A value for the "fSourceClientAreaOnly" member has been specified.
-#pragma endregion
-
-typedef LRESULT(CALLBACK* WNDPROC)(HWND, UINT, WPARAM, LPARAM);
-
-typedef struct tagWNDCLASSW {
-	UINT        style;
-	WNDPROC     lpfnWndProc;
-	int         cbClsExtra;
-	int         cbWndExtra;
-	HINSTANCE   hInstance;
-	HICON       hIcon;
-	HCURSOR     hCursor;
-	HBRUSH      hbrBackground;
-	LPCWSTR     lpszMenuName;
-	LPCWSTR     lpszClassName;
-} WNDCLASSW, * PWNDCLASSW, NEAR* NPWNDCLASSW, FAR* LPWNDCLASSW, WNDCLASS;
-
-MIDL_INTERFACE("45D64A29-A63E-4CB6-B498-5781D298CB4F")
-ICoreWindowInterop : public IUnknown
-{
-public:
-	virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_WindowHandle(
-		/* [retval][out] */ __RPC__deref_out_opt HWND * hwnd) = 0;
-
-	virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_MessageHandled(
-		/* [in] */ boolean value) = 0;
-
-};
-
-DECLARE_INTERFACE_IID_(IDCompositionDevice, IUnknown, "C37EA93A-E7AA-450D-B16F-9746CB0407F3")
-{
-	//DUMMY
-};
-
-DECLARE_INTERFACE_IID_(IDCompositionVisual, IUnknown, "4d93059d-097b-4651-9a60-f0f25116e2f3")
-{
-	//DUMMY
-};
-
-DECLARE_INTERFACE_IID_(IDCompositionVisual2, IDCompositionVisual, "E8DE1639-4331-4B26-BC5F-6A321D347A85")
-{
-	//DUMMY
-};
-
-typedef HWND
-(WINAPI*
-	FindWindowWProto)(
-		_In_opt_ LPCWSTR lpClassName,
-		_In_opt_ LPCWSTR lpWindowName);
-
-typedef BOOL
-(WINAPI*
-GetWindowRectProto)(
-	_In_ HWND hWnd,
-	_Out_ LPRECT lpRect);
-
-typedef HWND
-(WINAPI*
-GetParentProto)(
-	_In_ HWND hWnd);
 
 enum WINDOWCOMPOSITIONATTRIB
 {
@@ -157,3 +78,43 @@ typedef struct WINDOWCOMPOSITIONATTRIBDATA
 typedef BOOL(WINAPI* SetWindowCompositionAttribute)(
 	IN HWND hwnd,
 	IN WINDOWCOMPOSITIONATTRIBDATA* pwcad);
+
+//Windows::UI::Composition::IInteropCompositorPartner
+DECLARE_INTERFACE_IID_(IInteropCompositorPartner, IUnknown, "e7894c70-af56-4f52-b382-4b3cd263dc6f")
+{
+	STDMETHOD(MarkDirty)(THIS_) PURE;
+
+	STDMETHOD(ClearCallback)(THIS_) PURE;
+
+	STDMETHOD(CreateManipulationTransform)(THIS_
+		IN IDCompositionTransform * transform,
+		IN REFIID iid,
+		OUT VOID * *result) PURE;
+
+	STDMETHOD(RealClose)(THIS_) PURE;
+};
+
+//Windows.UI.Composition.IInteropCompositorPartnerCallback
+DECLARE_INTERFACE_IID_(IInteropCompositorPartnerCallback, IUnknown, "9bb59fc9-3326-4c32-bf06-d6b415ac2bc5")
+{
+	STDMETHOD(NotifyDirty)(THIS_) PURE;
+
+	STDMETHOD(NotifyDeferralState)(THIS_
+		bool deferRequested) PURE;
+};
+
+//Windows::UI::Composition::IInteropCompositorFactoryPartner
+DECLARE_INTERFACE_IID_(IInteropCompositorFactoryPartner, IInspectable, "22118adf-23f1-4801-bcfa-66cbf48cc51b")
+{
+	STDMETHOD(CreateInteropCompositor)(THIS_
+		IN IUnknown * renderingDevice,
+		IN IInteropCompositorPartnerCallback * callback,
+		IN REFIID iid,
+		OUT VOID * *instance
+		) PURE;
+
+	STDMETHOD(CheckEnabled)(THIS_
+		OUT bool* enableInteropCompositor,
+		OUT bool* enableExposeVisual
+		) PURE;
+};

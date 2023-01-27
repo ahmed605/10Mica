@@ -1,0 +1,6 @@
+﻿<Project>
+  <PropertyGroup>
+    <BuildOutDir>$([MSBuild]::NormalizeDirectory('$(SolutionDir)', '$(Platform)', '$(Configuration)'))</BuildOutDir>
+    <IntDir>$([MSBuild]::NormalizeDirectory('$(BuildOutDir)', '$(MSBuildProjectName)', 'obj'))</IntDir>
+  </PropertyGroup>
+</Project>
