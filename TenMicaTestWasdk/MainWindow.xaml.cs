@@ -34,7 +34,7 @@ namespace TenMicaTestWasdk
         private void myButton_Click(object sender, RoutedEventArgs e)
         {
             myButton.Content = "Clicked";
-            theGrid.Background = new TenMica.TenMicaBrush() { TargetWindow = this };
+            //theGrid.Background = new TenMica.TenMicaBrush() { TargetWindow = this };
         }
     }
 }

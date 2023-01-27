@@ -8,9 +8,13 @@
     xmlns:local="using:TenMicaTestWasdk"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mica="using:TenMica"
     mc:Ignorable="d">
 
-    <Grid x:Name="theGrid">
+    <Grid>
+        <Grid.Background>
+            <mica:TenMicaBrush TargetWindow="{x:Bind}" EnabledInActivatedNotForeground="True"/>
+        </Grid.Background>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
         </StackPanel>
