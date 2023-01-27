@@ -229,6 +229,18 @@ void TenMicaBrush::OnConnected()
 
 	HWND targetWindow = (HWND)FindWindow(L"Progman", NULL); // Progman is still the name of the Desktop window :))))
 
+	SendMessage(targetWindow,
+		0x052C,
+		0x0000000D,
+		0);
+
+	SendMessage(targetWindow,
+		0x052C,
+		0x0000000D,
+		1);
+
+	SendMessageTimeout(targetWindow, 0x052C, 0, 0, SMTO_NORMAL, 1000, nullptr);
+
 	SIZE windowSize{};
 	lDwmpQueryWindowThumbnailSourceSize(targetWindow, FALSE, &windowSize);
 
@@ -507,6 +519,18 @@ void TenMicaBrush::UpdateBrush()
 
 		SIZE windowSize{};
 		lDwmpQueryWindowThumbnailSourceSize(targetWindow, FALSE, &windowSize);
+
+		SendMessage(targetWindow,
+			0x052C,
+			0x0000000D,
+			0);
+
+		SendMessage(targetWindow,
+			0x052C,
+			0x0000000D,
+			1);
+
+		SendMessageTimeout(targetWindow, 0x052C, 0, 0, SMTO_NORMAL, 1000, nullptr);
 
 		newBrush = BuildMicaEffectBrush(compositor, spriteVisual, tintColor, tintOpacity, 1.0f, windowSize);
 
