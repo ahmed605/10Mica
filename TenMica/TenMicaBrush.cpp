@@ -359,7 +359,7 @@ void TenMicaBrush::UpdateBrush()
 		//TODO: check if visualRaw isn't nullptr before casting
 		auto visual = reinterpret_cast<Visual^>(visualRaw.Get());
 
-		newBrush = BuildMicaEffectBrush(compositor, visual, ColorHelper::FromArgb(255, 243, 243, 243), 0.5f, 1.0f, windowSize); // Light mode
+		newBrush = BuildMicaEffectBrush(compositor, visual, tintColor, tintOpacity, 1.0f, windowSize);
 
 		RECT rect;
 		GetWindowRect(cHwnd, &rect);
