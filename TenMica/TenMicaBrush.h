@@ -34,6 +34,8 @@ using namespace Windows::UI::ViewManagement;
 
 #define var auto
 
+#pragma pack (8) // C++/CX is stupid and won't allow us to compile on x86/Win32 without this...
+
 namespace TenMica
 {
     private enum class FullScreenType //FULL_SCREEN_TYPE

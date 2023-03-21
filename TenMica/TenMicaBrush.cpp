@@ -21,7 +21,7 @@ void TenMicaBrush::Init()
 	GetWindowRect = (GetWindowRectProto)GetProcAddress("user32.dll", "GetWindowRect");
 	FindWindow = (FindWindowWProto)GetProcAddress("user32.dll", "FindWindowW");
 	GetParent = (GetParentProto)GetProcAddress("user32.dll", "GetParent");
-	lSetWindowCompositionAttribute = (SetWindowCompositionAttribute)GetProcAddress("user32.dll", "SetWindowCompositionAttribute");
+	//lSetWindowCompositionAttribute = (SetWindowCompositionAttribute)GetProcAddress("user32.dll", "SetWindowCompositionAttribute");
 }
 
 ::CompositionBrush^ TenMicaBrush::BuildMicaEffectBrush(Compositor^ compositor, Visual^ src, Color tintColor, float tintOpacity, float luminosityOpacity, SIZE size)
@@ -360,6 +360,10 @@ void TenMicaBrush::UpdateBrush()
 		auto visual = reinterpret_cast<Visual^>(visualRaw.Get());
 
 		newBrush = BuildMicaEffectBrush(compositor, visual, ColorHelper::FromArgb(255, 243, 243, 243), 0.5f, 1.0f, windowSize); // Light mode
+
+		RECT rect;
+		GetWindowRect(cHwnd, &rect);
+		UpdateVisual(rect);
 	}
 
 	::CompositionBrush^ oldBrush = CompositionBrush;
@@ -436,7 +440,7 @@ void TenMicaBrush::OnDisconnected()
 			surface->SourceVisual = null;
 			delete surface;
 			surface = null;
-			delete visual;
+			//delete visual;
 			visual = null;
 		} catch (...) { }
 	}
