@@ -5,7 +5,7 @@
 > The code is still messy, incomplete, full of duplications, and not ready to be used in production yet
 
 ## Media
-https://github.com/ahmed605/10Mica/assets/34550324/22405269-ee5c-4cae-a4ef-320aeb5d2207
+https://github.com/ahmed605/10Mica/assets/34550324/8b8bc16f-5399-4cc1-947b-77ab807bc6de
 
 ## Usage
 
@@ -43,9 +43,9 @@ https://github.com/ahmed605/10Mica/assets/34550324/22405269-ee5c-4cae-a4ef-320ae
 
 ### Oxidized
 
-![Oxidized_but_something_is_different](https://github.com/ahmed605/10Mica/assets/34550324/751a8725-a389-43c0-8c61-1465ffa2a79a)
+![Oxidized_but_something_is_different](https://github.com/ahmed605/10Mica/assets/34550324/95aca844-44eb-4c0f-b0e4-f2738a084053)
 
 
 ### [FlairMax](https://www.microsoft.com/store/apps/9PDZVJ34ZTXG)
 
-![Screenshot_2023-05-12_174506](https://github.com/ahmed605/10Mica/assets/34550324/f49f9a55-d753-4fcb-8c5d-32ad3bd07a26)
+![Screenshot_2023-05-12_174506](https://github.com/ahmed605/10Mica/assets/34550324/c9803ed6-cf81-4101-bec1-470ea2c0f906)
