@@ -261,7 +261,7 @@ void TenMicaBrush::OnActivated(CoreWindow^ sender, WindowActivatedEventArgs^ arg
 	sender->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new Windows::UI::Core::DispatchedHandler([this, sender]()
 	{
 		var activated = sender->ActivationMode == CoreWindowActivationMode::ActivatedInForeground
-			|| (enableInActivatedNotForeground && sender->ActivationMode == CoreWindowActivationMode::ActivatedNotForeground);
+			|| (enableInActivatedNotForeground && (sender->ActivationMode == CoreWindowActivationMode::ActivatedNotForeground || sender->Visible));
 		if (windowActivated && activated == windowActivated)
 		{
 			return;
