@@ -216,6 +216,8 @@ void TenMicaBrush::OnConnected()
 
 	if (DesignMode::DesignModeEnabled) return;
 
+	if (Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamily != "Windows.Desktop") return;
+
 	cWindow = CoreWindow::GetForCurrentThread(); // Assuming we use CoreWindow
 	CoreWindow^ coreWnd = cWindow;
 
