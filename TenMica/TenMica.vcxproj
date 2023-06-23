@@ -271,6 +271,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="dcomp.local.h" />
     <ClInclude Include="DwmThumbnail.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TenMicaBrush.h" />

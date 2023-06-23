@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <dwmapi.h>
+#include "dcomp.local.h"
 
 enum THUMBNAIL_TYPE
 {
@@ -43,6 +44,9 @@ typedef HRESULT(WINAPI* DwmpQueryThumbnailType)(
 	IN HTHUMBNAIL hThumbnailId,
 	OUT THUMBNAIL_TYPE* thumbType);
 
+typedef HRESULT(WINAPI* DwmUnregisterThumbnail)(
+	IN HTHUMBNAIL hThumbnailId);
+
 #define DWM_TNP_FREEZE            0x100000
 #define DWM_TNP_ENABLE3D          0x4000000
 #define DWM_TNP_DISABLE3D         0x8000000
@@ -82,21 +86,6 @@ public:
 	virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_MessageHandled(
 		/* [in] */ boolean value) = 0;
 
-};
-
-DECLARE_INTERFACE_IID_(IDCompositionDevice, IUnknown, "C37EA93A-E7AA-450D-B16F-9746CB0407F3")
-{
-	//DUMMY
-};
-
-DECLARE_INTERFACE_IID_(IDCompositionVisual, IUnknown, "4d93059d-097b-4651-9a60-f0f25116e2f3")
-{
-	//DUMMY
-};
-
-DECLARE_INTERFACE_IID_(IDCompositionVisual2, IDCompositionVisual, "E8DE1639-4331-4B26-BC5F-6A321D347A85")
-{
-	//DUMMY
 };
 
 typedef HWND

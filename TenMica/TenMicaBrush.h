@@ -33,6 +33,7 @@ using namespace Microsoft::Graphics::Canvas::Effects;
 using namespace Windows::UI::ViewManagement;
 
 #define var auto
+#define null nullptr
 
 #pragma pack (8) // C++/CX is stupid and won't allow us to compile on x86/Win32 without this...
 
@@ -93,6 +94,7 @@ namespace TenMica
         DwmpQueryThumbnailType lDwmpQueryThumbnailType;
         DwmpCreateSharedThumbnailVisual lDwmpCreateSharedThumbnailVisual;
         DwmpQueryWindowThumbnailSourceSize lDwmpQueryWindowThumbnailSourceSize;
+        DwmUnregisterThumbnail lDwmUnregisterThumbnail;
         GetWindowRectProto GetWindowRect;
         FindWindowWProto FindWindow;
         GetParentProto GetParent;
@@ -107,10 +109,14 @@ namespace TenMica
         bool windowActivated;
         bool enableInActivatedNotForeground = false;
         HWND hwndHelper;
+        bool legacyMode = false;
 
         CompositionVisualSurface^ surface;
+        ICompositionVisualSurfaceLegacy^ surfaceLegacy;
         CoreWindow^ cWindow;
         HWND cHwnd;
+        HTHUMBNAIL hThumbWindow = NULL;
+        ComPtr<IDCompositionVisual2> windowVisualLegacy;
 
         Windows::Foundation::EventRegistrationToken OnActivatedCookie;
         Windows::Foundation::EventRegistrationToken OnColorValuesChangedCookie;
@@ -122,6 +128,7 @@ namespace TenMica
 
         void Init();
         ::CompositionBrush^ BuildMicaEffectBrush(Compositor^ compositor, Visual^ src, Color tintColor, float tintOpacity, float luminosityOpacity, SIZE size);
+        ::CompositionBrush^ BuildMicaEffectBrushLegacy(Compositor^ compositor, IDCompositionVisual2* src, Color tintColor, float tintOpacity, float luminosityOpacity, SIZE size);
         void UpdateVisual(RECT rect);
         ::CompositionBrush^ CreateCrossFadeEffectBrush(Compositor^ compositor, ::CompositionBrush^ from, ::CompositionBrush^ to);
         ScalarKeyFrameAnimation^ CreateCrossFadeAnimation(Compositor^ compositor);
