@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "TenMicaBrush.h"
+#include <CompHelper.h>
 using namespace Windows::ApplicationModel;
 using namespace Windows::System::Power;
 
@@ -112,8 +113,6 @@ void TenMicaBrush::Init()
 {
 	ComPtr<IDCompositionDevice3> device;
 	//ComPtr<IDCompositionDesktopDeviceRestricted> deviceRestricted;
-	IDCompositionDesktopDevicePartner3* partner;
-	ICompositorPartner2^ partner2 = dynamic_cast<ICompositorPartner2^>(compositor);
 	
 	ComPtr<ABI::Windows::UI::Composition::IVisual> visualRaw;
 	src->QueryInterface(visualRaw.GetAddressOf());
@@ -121,7 +120,9 @@ void TenMicaBrush::Init()
 
 	(reinterpret_cast<IInspectable*>(compositor))->QueryInterface(device.GetAddressOf());
 	//device.As(&deviceRestricted);
-	device->QueryInterface(__uuidof(IDCompositionDesktopDevicePartner3), (void**)&partner);
+	auto functions = GetFloodEffectAndVisualSurfaceFunctions(device.Get());
+	auto CreateFloodEffect = std::get<CreateFloodEffectFunc>(functions);
+	auto CreateVisualSurface = std::get<CreateVisualSurfaceFunc>(functions);
 
 	// Tint Color.
 
@@ -130,7 +131,7 @@ void TenMicaBrush::Init()
 	D2D1_VECTOR_4F tintColorOpacity = { tintColor.R / 255.0f, tintColor.G / 255.0f, tintColor.B / 255.0f, tintOpacity };
 
 	//deviceRestricted->CreateFloodEffect(tintOpacityEffect.GetAddressOf());
-	partner->CreateFloodEffect(tintOpacityEffect.GetAddressOf());
+	CreateFloodEffect(std::get<0>(functions), tintOpacityEffect.GetAddressOf());
 	tintOpacityEffect->SetColor(tintColorOpacity);
 
 	// Apply Luminosity:
@@ -139,7 +140,7 @@ void TenMicaBrush::Init()
 	ComPtr<IDCompositionFloodEffect> luminosityOpacityEffect;
 
 	//deviceRestricted->CreateFloodEffect(luminosityOpacityEffect.GetAddressOf());
-	partner->CreateFloodEffect(luminosityOpacityEffect.GetAddressOf());
+	CreateFloodEffect(std::get<0>(functions), luminosityOpacityEffect.GetAddressOf());
 	luminosityOpacityEffect->SetColor(tintColorLuminosity);
 
 	ComPtr<IDCompositionGaussianBlurEffect> blurEffect;
@@ -182,13 +183,16 @@ void TenMicaBrush::Init()
 		catch (...) {}
 	}
 
-	surfaceLegacy = partner2->CreateVisualSurface();
+	surfaceLegacy = GetVisualSurface(std::get<1>(functions), CreateVisualSurface);
 	surfaceLegacy->Source = vis;
 	surfaceLegacy->SourceRectangleRight = size.cx;
 	surfaceLegacy->SourceRectangleBottom = size.cy;
 
 	var brushRaw = compositor->CreateSurfaceBrush((ICompositionSurface^)surfaceLegacy);
 	brushRaw->Stretch = CompositionStretch::None;
+
+	((IUnknown*)std::get<0>(functions))->Release();
+	((IUnknown*)std::get<1>(functions))->Release();
 
 	return brushRaw;
 }

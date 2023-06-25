@@ -142,112 +142,6 @@ typedef interface IDCompositionVisual                    IDCompositionVisual;
 
 //+-----------------------------------------------------------------------------
 //
-//  Function:
-//      DCompositionCreateDevice
-//
-//  Synopsis:
-//      Creates a new DirectComposition device object, which can be used to create
-//      other DirectComposition objects.
-//
-//------------------------------------------------------------------------------
-STDAPI DCompositionCreateDevice(
-    _In_opt_ IDXGIDevice* dxgiDevice,
-    _In_ REFIID iid,
-    _Outptr_ void** dcompositionDevice
-);
-
-#if (_WIN32_WINNT >= _WIN32_WINNT_WINBLUE)
-//+-----------------------------------------------------------------------------
-//
-//  Function:
-//      DCompositionCreateDevice2
-//
-//  Synopsis:
-//      Creates a new DirectComposition device object, which can be used to create
-//      other DirectComposition objects.
-//
-//------------------------------------------------------------------------------
-STDAPI DCompositionCreateDevice2(
-    _In_opt_ IUnknown* renderingDevice,
-    _In_ REFIID iid,
-    _Outptr_ void** dcompositionDevice
-);
-#endif  // (_WIN32_WINNT >= _WIN32_WINNT_WINBLUE)
-
-#if (_WIN32_WINNT >= _WIN32_WINNT_WINTHRESHOLD)
-//+-----------------------------------------------------------------------------
-//
-//  Function:
-//      DCompositionCreateDevice3
-//
-//  Synopsis:
-//      Creates a new DirectComposition device object, which can be used to create
-//      other DirectComposition objects.
-//
-//------------------------------------------------------------------------------
-STDAPI DCompositionCreateDevice3(
-    _In_opt_ IUnknown* renderingDevice,
-    _In_ REFIID iid,
-    _Outptr_ void** dcompositionDevice
-);
-
-#endif  // (_WIN32_WINNT >= _WIN32_WINNT_WINTHRESHOLD)
-
-//+-----------------------------------------------------------------------------
-//
-//  Function:
-//      DCompositionCreateSurfaceHandle
-//
-//  Synopsis:
-//      Creates a new composition surface object, which can be bound to a
-//      DirectX swap chain or swap buffer or to a GDI bitmap and associated
-//      with a visual.
-//
-//------------------------------------------------------------------------------
-STDAPI DCompositionCreateSurfaceHandle(
-    _In_ DWORD desiredAccess,
-    _In_opt_ SECURITY_ATTRIBUTES* securityAttributes,
-    _Out_ HANDLE* surfaceHandle
-);
-
-//+-----------------------------------------------------------------------------
-//
-//  Function:
-//      DCompositionAttachMouseWheelToHwnd
-//
-//  Synopsis:
-//      Creates an Interaction/InputSink to route mouse wheel messages to the
-//      given HWND. After calling this API, the device owning the visual must
-//      be committed.
-//
-//------------------------------------------------------------------------------
-STDAPI DCompositionAttachMouseWheelToHwnd(
-    _In_ IDCompositionVisual* visual,
-    _In_ HWND hwnd,
-    _In_ BOOL enable
-);
-
-//+-----------------------------------------------------------------------------
-//
-//  Function:
-//      DCompositionAttachMouseDragToHwnd
-//
-//  Synopsis:
-//      Creates an Interaction/InputSink to route mouse button down and any
-//      subsequent move and up events to the given HWND. There is no move
-//      thresholding; when enabled, all events including and following the down
-//      are unconditionally redirected to the specified window. After calling this
-//      API, the device owning the visual must be committed.
-//
-//------------------------------------------------------------------------------
-STDAPI DCompositionAttachMouseDragToHwnd(
-    _In_ IDCompositionVisual* visual,
-    _In_ HWND hwnd,
-    _In_ BOOL enable
-);
-
-//+-----------------------------------------------------------------------------
-//
 //  Interface:
 //      IDCompositionDevice
 //
@@ -2370,18 +2264,7 @@ DECLARE_INTERFACE_IID_(IDCompositionDesktopDeviceRestricted, IUnknown, "6083f66a
         ) PURE;
 };
 
-MIDL_INTERFACE("0ab6bdb3-4d49-46a8-b90b-1a86b0cd4e41")
-IDCompositionDesktopDevicePartner3
-{
-public:
-    void** vtbl;
-
-    HRESULT CreateFloodEffect(IDCompositionFloodEffect ** floodEffect)
-    {
-        return ((HRESULT (WINAPI*)(IDCompositionDesktopDevicePartner3*, IDCompositionFloodEffect**))vtbl[66])(this, floodEffect);
-    }
-};
-
+#pragma pack (8)
 [uuid("F26DA89E-683D-4C67-AEA7-BA29B2217A7F")]
 interface class ICompositionVisualSurfaceLegacy
 {
@@ -2395,13 +2278,6 @@ public:
     property Windows::UI::Composition::CompositionStretch Stretch;
 
     void Freeze();
-};
-
-[uuid("DCEAD379-D98D-486A-8506-38C4DA7FC19E")]
-interface class ICompositorPartner2
-{
-public:
-    ICompositionVisualSurfaceLegacy^ CreateVisualSurface();
 };
 
 #endif  // (_WIN32_WINNT >= _WIN32_WINNT_WINTHRESHOLD)
