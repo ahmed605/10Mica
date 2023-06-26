@@ -46,7 +46,7 @@ inline std::tuple<void*, void*, CreateFloodEffectFunc, CreateVisualSurfaceFunc> 
 		auto v = wcstoull(familyVersion->Data(), &end, 10);
 
 		auto build = (v & 0x00000000FFFF0000L) >> 16;
-		visualSurfaceFunc = (CreateVisualSurfaceFunc)cStruct->vtbl[v >= 17763 ? 22 : 19];
+		visualSurfaceFunc = (CreateVisualSurfaceFunc)cStruct->vtbl[build >= 17763 ? 22 : 19];
 	}
 	else // 1709
 	{
