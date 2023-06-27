@@ -10,7 +10,7 @@ https://github.com/ahmed605/10Mica/assets/34550324/8b8bc16f-5399-4cc1-947b-77ab8
 ## Usage
 
 > **Note**
-> While the example below set the brush on the `Page` and `Grid` elements, it's **very** recommended to use it on the `Frame` element instead as you **can't** have more than one `TenMicaBrush` instance running, so using it on the `Frame` element assures that there's only one instance running. 
+> While the UWP example below set the brush on the `Page` element, it's **very** recommended to use it on the `Frame` element instead as you **can't** have more than one `TenMicaBrush` instance running, so using it on the `Frame` element assures that there's only one instance running. 
 
 ### UWP
 
