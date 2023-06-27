@@ -35,7 +35,6 @@
 
 #using "Microsoft.UI.winmd"
 #using "Microsoft.UI.Xaml.winmd"
-#using "Microsoft.Graphics.Canvas.winmd"
 #using "Microsoft.Graphics.winmd"
 
 using namespace Platform;
@@ -49,7 +48,7 @@ using namespace Windows::UI;
 using namespace Windows::UI::Input;
 using namespace Microsoft::UI::Composition;
 using namespace Microsoft::UI::Xaml::Media;
-using namespace Microsoft::Graphics::Canvas::Effects;
+using namespace Microsoft::UI::Private::Composition::Effects;
 using namespace Windows::Graphics;
 using namespace Windows::Graphics::DirectX;
 using namespace Windows::Graphics::Capture;
@@ -157,12 +156,10 @@ namespace TenMica
         IAsyncOperation<ICompositionSurface^>^ CaptureAsync(Visual^ visual, CompositionGraphicsDevice^ graphicsDevice, int w, int h, DirectXPixelFormat pixelFormat, DirectXAlphaMode alphaMode);
     };
 
-    //TODO: inherit from IXamlCompositionBrushBaseOverridesPrivate to support non-full-window Mica scenarios
-    //TODO: add support for AppWindow, do not assume CoreWindow
     //TODO: add multi-monitor support
     //TODO: handle theming properly
 
-    public ref class TenMicaBrush sealed : XamlCompositionBrushBase
+    public ref class TenMicaBackdrop sealed : SystemBackdrop
     {
     private:
         DwmpQueryThumbnailType lDwmpQueryThumbnailType;
@@ -181,16 +178,16 @@ namespace TenMica
         bool enableInActivatedNotForeground = false;
         HWND hwndHelper;
 
-        CompositionVisualSurface^ surface;
-        SpriteVisual^ spriteVisual;
-        CompositionSurfaceBrush^ theBrush;
-        CompositionGraphicsDevice^ theGraphicsDevice;
-        Direct3D11CaptureFramePool^ pool;
-        GraphicsCaptureSession^ gS;
+        Windows::UI::Composition::CompositionVisualSurface^ surface;
         Windows::UI::Composition::Compositor^ winComp;
-        Window^ cWindow;
         Microsoft::UI::Windowing::AppWindow^ appWindow;
-        HWND cHwnd { 0 };
+        Windows::UI::Composition::Visual^ wndVisual;
+        ICompositionSupportsSystemBackdrop^ backdrop;
+        XamlRoot^ xamlRoot;
+
+        HWND cHwnd{ 0 };
+        //Window^ cWindow;
+        HTHUMBNAIL hThumbWindow = NULL;
 
         Windows::Foundation::EventRegistrationToken OnActivatedCookie;
         Windows::Foundation::EventRegistrationToken OnColorValuesChangedCookie;
@@ -198,22 +195,20 @@ namespace TenMica
         Windows::Foundation::EventRegistrationToken OnEnergySaverStatusChangedCookie;
         Windows::Foundation::EventRegistrationToken OnCompositionCapabilitiesChangedCookie;
         Windows::Foundation::EventRegistrationToken OnWindowPositionChangedCookie;
-        Windows::Foundation::EventRegistrationToken OnDisplayChangedCookie;
+        //Windows::Foundation::EventRegistrationToken OnDisplayChangedCookie;
         Windows::Foundation::EventRegistrationToken FrameArrivedCookie;
 
         ComPtr<ID3D11Device> direct3dDevice;
         ComPtr<IDXGIDevice2> dxgiDevice;
         ComPtr<ID2D1Factory2> d2dFactory2;
         ComPtr<ID2D1Device> d2dDevice;
-        //ComPtr<IDCompositionDesktopDevice> dcompDevice;
-        //ComPtr<IVisualTargetPartner> cTarget;
 
         void Init();
         bool CreateDevice();
-        ::CompositionBrush^ BuildMicaEffectBrush(Compositor^ compositor, Visual^ src, Color tintColor, float tintOpacity, float luminosityOpacity, SIZE size);
+        Windows::UI::Composition::CompositionBrush^ BuildMicaEffectBrush(Windows::UI::Composition::Compositor^ compositor, Windows::UI::Composition::Visual^ src, Color tintColor, float tintOpacity, float luminosityOpacity, SIZE size);
         void UpdateVisual(RECT rect);
-        ::CompositionBrush^ CreateCrossFadeEffectBrush(Compositor^ compositor, ::CompositionBrush^ from, ::CompositionBrush^ to);
-        ScalarKeyFrameAnimation^ CreateCrossFadeAnimation(Compositor^ compositor);
+        Windows::UI::Composition::CompositionBrush^ CreateCrossFadeEffectBrush(Windows::UI::Composition::Compositor^ compositor, Windows::UI::Composition::CompositionBrush^ from, Windows::UI::Composition::CompositionBrush^ to);
+        Windows::UI::Composition::ScalarKeyFrameAnimation^ CreateCrossFadeAnimation(Windows::UI::Composition::Compositor^ compositor);
         void UpdateBrush();
         void OnActivated(Object^ sender, Microsoft::UI::Xaml::WindowActivatedEventArgs^ args);
         void OnColorValuesChanged(UISettings^ sender, Object^ args);
@@ -221,19 +216,37 @@ namespace TenMica
         void OnEnergySaverStatusChanged(Platform::Object^ sender, Platform::Object^ e);
         void OnCompositionCapabilitiesChanged(CompositionCapabilities^ sender, Platform::Object^ args);
         void OnWindowPositionChanged(IInternalCoreWindow2^ window, Platform::Object^ args);
-        void OnDisplayChanged(Windows::UI::Core::CoreWindow^ sender, Platform::Object^ args);
+        //void OnDisplayChanged(Windows::UI::Core::CoreWindow^ sender, Platform::Object^ args);
         void OnAppWindowChanged(Microsoft::UI::Windowing::AppWindow^ sender, AppWindowChangedEventArgs^ args);
-        Windows::UI::Composition::Compositor^ TenMicaBrush::InitializeInteropCompositor(IUnknown* d2dDevice);
+        Windows::UI::Composition::Compositor^ TenMicaBackdrop::InitializeInteropCompositor(IUnknown* d2dDevice);
     public:
-        TenMicaBrush();
-        TenMicaBrush(ApplicationTheme ForcedTheme);
+        TenMicaBackdrop();
+        TenMicaBackdrop(ApplicationTheme ForcedTheme);
 
         property bool IsThemeForced { bool get(); void set(bool value); }
         property bool EnabledInActivatedNotForeground { bool get(); void set(bool value); }
         property ApplicationTheme ForcedTheme { ApplicationTheme get(); void set(ApplicationTheme value); }
-        property Window^ TargetWindow;
+        property Microsoft::UI::Composition::SystemBackdrops::SystemBackdropConfiguration^ backdropConfig;
     protected:
-        virtual void OnConnected() override;
-        virtual void OnDisconnected() override;
+        virtual void OnTargetConnected(ICompositionSupportsSystemBackdrop^ connectedTarget, XamlRoot^ xamlRoot) override;
+        virtual void OnTargetDisconnected(ICompositionSupportsSystemBackdrop^ disconnectedTarget) override;
+        virtual void OnDefaultSystemBackdropConfigurationChanged(ICompositionSupportsSystemBackdrop^ target, XamlRoot^ xamlRoot) override;
     };
 }
+
+[uuid("f2aa238f-1c21-581e-aadc-7d6ec5320f56")]
+interface class IDesktopWindowXamlSource
+{
+    property UIElement^ Content;
+    property bool HasFocus { bool get(); }
+    property SystemBackdrop^ SystemBackdrop;
+    property Platform::Object^ SiteBridge { Platform::Object^ get(); }
+};
+
+[uuid("4258422d-2fcf-5f11-8d28-b558a1fbed51")]
+interface class IDesktopSiteBridge
+{
+    property bool InputEnabled;
+    property Platform::Object^ WindowBridge { Platform::Object^ get(); }
+    property Microsoft::UI::WindowId WindowId { Microsoft::UI::WindowId get(); }
+};

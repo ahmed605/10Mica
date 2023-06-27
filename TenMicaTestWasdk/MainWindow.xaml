@@ -11,10 +11,11 @@
     xmlns:mica="using:TenMica"
     mc:Ignorable="d">
 
+    <Window.SystemBackdrop>
+        <mica:TenMicaBackdrop/>
+    </Window.SystemBackdrop>
+
     <Grid>
-        <Grid.Background>
-            <mica:TenMicaBrush TargetWindow="{x:Bind}" EnabledInActivatedNotForeground="True"/>
-        </Grid.Background>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
         </StackPanel>

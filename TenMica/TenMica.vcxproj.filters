@@ -8,11 +8,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="TenMicaBrush.cpp" />
+    <ClCompile Include="TenMicaBackdrop.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="TenMicaBrush.h" />
+    <ClInclude Include="TenMicaBackdrop.h" />
     <ClInclude Include="DwmThumbnail.h" />
     <ClInclude Include="microsoft.ui.xaml.window.h" />
     <ClInclude Include="Microsoft.UI.Composition.Interop.h" />

@@ -42,7 +42,7 @@
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.15063.0</WindowsTargetPlatformMinVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
@@ -283,7 +283,7 @@
     <ClInclude Include="Microsoft.UI.Composition.Interop.h" />
     <ClInclude Include="microsoft.ui.xaml.window.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="TenMicaBrush.h" />
+    <ClInclude Include="TenMicaBackdrop.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -296,7 +296,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TenMicaBrush.cpp" />
+    <ClCompile Include="TenMicaBackdrop.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.UI.Private.Composition.Effects\Microsoft.UI.Private.Composition.Effects.vcxproj">
+      <Project>{3ee851ed-d153-4a64-b783-731e5e3deee6}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
