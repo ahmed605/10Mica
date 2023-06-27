@@ -3,7 +3,6 @@
 #include <DwmThumbnail.h>
 #include <Windows.h>
 #include <winstring.h>
-//#include <windows.ui.xaml.h>
 #include <microsoft.ui.xaml.window.h>
 #include <wrl.h>
 #include <ntstatus.h>
