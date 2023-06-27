@@ -1,7 +1,6 @@
 ﻿#include "pch.h"
 #include "TenMicaBackdrop.h"
-using namespace Windows::Graphics::DirectX::Direct3D11;
-using namespace Windows::Graphics::Capture;
+
 using namespace Windows::ApplicationModel;
 using namespace Windows::System::Power;
 
@@ -148,13 +147,7 @@ void TenMicaBackdrop::OnTargetConnected(ICompositionSupportsSystemBackdrop^ conn
 	energySaver = PowerManager::EnergySaverStatus == EnergySaverStatus::On;
 
 	//windowActivated = backdropConfig->IsInputActive || enableInActivatedNotForeground;
-	windowActivated = true;
-
-	//ComPtr<IWindowNative> coreWndRaw;
-	///((IUnknown*)cWindow)->QueryInterface(coreWndRaw.GetAddressOf());
-
-	// Getting our HWND
-	//coreWndRaw->get_WindowHandle(&cHwnd);
+	windowActivated = siteBridge->InputEnabled || enableInActivatedNotForeground;
 
 	cHwnd = GetParent((HWND)siteBridge->WindowId.Value);
 	appWindow = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(Microsoft::UI::WindowId{ (unsigned long long)cHwnd });
@@ -291,24 +284,6 @@ void TenMicaBackdrop::OnAppWindowChanged(Microsoft::UI::Windowing::AppWindow^ se
 	}
 }
 
-/*void TenMicaBackdrop::OnDisplayChanged(Windows::UI::Core::CoreWindow^ sender, Platform::Object^ args)
-{
-	cWindow->DispatcherQueue->TryEnqueue(Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, ref new Microsoft::UI::Dispatching::DispatcherQueueHandler([this, sender]()
-	{
-		UpdateBrush();
-	}));
-}*/
-
-void TenMicaBackdrop::OnWindowPositionChanged(IInternalCoreWindow2^ window, Platform::Object^ args)
-{
-	if (surface != nullptr)
-	{
-		RECT rect;
-		GetWindowRect(cHwnd, &rect);
-		UpdateVisual(rect);
-	}
-}
-
 void TenMicaBackdrop::OnColorValuesChanged(UISettings^ sender, Object^ args)
 {
 	xamlRoot->Content->DispatcherQueue->TryEnqueue(Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, ref new Microsoft::UI::Dispatching::DispatcherQueueHandler([this, sender]()
@@ -343,7 +318,7 @@ void TenMicaBackdrop::OnCompositionCapabilitiesChanged(CompositionCapabilities^ 
 	}));
 }
 
-void TenMicaBackdrop::OnActivated(Object^ sender, Microsoft::UI::Xaml::WindowActivatedEventArgs^ args)
+/*void TenMicaBackdrop::OnActivated(Object^ sender, Microsoft::UI::Xaml::WindowActivatedEventArgs^ args)
 {
 	((Window^)sender)->DispatcherQueue->TryEnqueue(Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, ref new Microsoft::UI::Dispatching::DispatcherQueueHandler([this, sender, args]()
 	{
@@ -356,7 +331,7 @@ void TenMicaBackdrop::OnActivated(Object^ sender, Microsoft::UI::Xaml::WindowAct
 		windowActivated = activated;
 		UpdateBrush();
 	}));
-}
+}*/
 
 Windows::UI::Composition::CompositionBrush^ TenMicaBackdrop::CreateCrossFadeEffectBrush(Windows::UI::Composition::Compositor^ compositor, Windows::UI::Composition::CompositionBrush^ from, Windows::UI::Composition::CompositionBrush^ to)
 {

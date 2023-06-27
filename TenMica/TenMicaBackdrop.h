@@ -60,102 +60,6 @@ using namespace concurrency;
 
 namespace TenMica
 {
-    private enum class FullScreenType //FULL_SCREEN_TYPE
-    {
-        Standard = 0x0,
-        Minimal = 0x1,
-        SuppressSystemOverlays = 0x2,
-        None = 0x3,
-    };
-
-    [uuid("42a17e3d-7171-439a-b1fa-a31b7b957489")]
-    private interface class IInternalCoreWindow
-    {
-        property MouseDevice^ MouseDevice { ::MouseDevice^ get(); }
-        property int ApplicationViewState { int get(); }
-        property int ApplicationViewOrientation { int get(); }
-        property int AdjacentDisplayEdges { int get(); }
-        property bool IsOnLockScreen{ bool get(); }
-        property PointerVisualizationSettings^ PointerVisualizationSettings { ::PointerVisualizationSettings^ get(); }
-        property CoreWindowResizeManager^ CoreWindowResizeManager { ::CoreWindowResizeManager^ get(); }
-        property bool IsScreenCaptureEnabled;
-        property FullScreenType SuppressSystemOverlays;
-        event TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>^ ThemeChanged;
-        event TypedEventHandler<CoreWindow^, Object^>^ ContextMenuRequested;
-        event TypedEventHandler<CoreWindow^, Object^>^ DisplayChanged;
-        event TypedEventHandler<CoreWindow^, Object^>^ Consolidated;
-    };
-
-    [uuid("c12779d8-85d2-43e5-901a-95dd4f8ecba3")]
-    private interface class IInternalCoreWindow2
-    {
-        property Rect LayoutBounds { Rect get(); }
-        property Rect VisibleBounds { Rect get(); }
-        property ApplicationViewBoundsMode DesiredBoundsMode { ApplicationViewBoundsMode get(); }
-        bool SetDesiredBoundsMode(ApplicationViewBoundsMode mode);
-        void OnVisibleBoundsChange();
-        event TypedEventHandler<IInternalCoreWindow2^, Platform::Object^>^ LayoutBoundsChanged;
-        event TypedEventHandler<IInternalCoreWindow2^, Platform::Object^>^ VisibleBoundsChanged;
-        event TypedEventHandler<IInternalCoreWindow2^, KeyEventArgs^>^ SysKeyDown;
-        event TypedEventHandler<IInternalCoreWindow2^, KeyEventArgs^>^ SysKeyUp;
-        event TypedEventHandler<IInternalCoreWindow2^, Platform::Object^>^ WindowPositionChanged;
-        event TypedEventHandler<IInternalCoreWindow2^, Platform::Object^>^ SettingChanged;
-        event TypedEventHandler<IInternalCoreWindow2^, Platform::Object^>^ ViewStateChanged;
-        event TypedEventHandler<IInternalCoreWindow2^, CoreWindowEventArgs^>^ Destroying;
-    };
-
-    [uuid("FE54DDBE-32CF-5EE0-84BC-3EF7FAEAD1C6")]
-    private interface class ISystemVisualProxyVisualPrivate
-    {
-
-    };
-
-    DECLARE_INTERFACE_IID_(ISystemVisualProxyVisualPrivateInterop, IUnknown, "B2CFCBC2-7133-4EF8-A686-DB7FD4D536B4")
-    {
-        STDMETHOD(GetHandle)(THIS_
-            OUT void** handle) PURE;
-    };
-
-    [uuid("6efeef10-e0c5-5997-bcb7-c1644f1cab81")]
-    private interface class ISystemVisualProxyVisualPrivateStatics
-    {
-        ISystemVisualProxyVisualPrivate^ Create(Compositor^ compositor);
-    };
-
-    DECLARE_INTERFACE_IID_(ISystemVisualProxyVisualPrivateStaticsRaw, IInspectable, "6efeef10-e0c5-5997-bcb7-c1644f1cab81")
-    {
-        STDMETHOD(Create)(THIS_
-            IN Compositor^ compositor,
-            OUT ISystemVisualProxyVisualPrivate^* proxy) PURE;
-    };
-
-    DECLARE_INTERFACE_IID_(IVisualTargetPartner, IUnknown, "A1BEA8BA-D726-4663-8129-6B5E7927FFA6")
-    {
-        STDMETHOD(GetRoot)(THIS_
-            OUT ABI::Windows::UI::Composition::IVisual** root) PURE;
-        STDMETHOD(SetRoot)(THIS_
-            OUT ABI::Windows::UI::Composition::IVisual* root) PURE;
-    };
-
-    DECLARE_INTERFACE_IID_(ICompositorPartner, IUnknown, "9CBD9312-070d-4588-9bf3-bbf528cf3e84")
-    {
-        STDMETHOD(CreateCursorVisual)(THIS_) PURE; //DUMMY
-        STDMETHOD(CreateSharedTarget)(THIS_) PURE; //DUMMY
-        STDMETHOD(CreateSharedVisual)(THIS_) PURE; //DUMMY
-        STDMETHOD(HintSize)(THIS_) PURE; //DUMMY
-        STDMETHOD(OfferSurfaceResources)(THIS_) PURE; //DUMMY
-        STDMETHOD(OpenSharedResourceHandle)(THIS_) PURE; //DUMMY
-        STDMETHOD(OpenSharedTargetFromHandle)(THIS_
-            IN void* handle, OUT IVisualTargetPartner** target) PURE;
-    };
-
-    [uuid("bb683713-bb45-50c7-8195-9af24dcc62f6")]
-    private interface class IVisualInternal
-    {
-        property float RasterizationScaleOverride;
-        IAsyncOperation<ICompositionSurface^>^ CaptureAsync(Visual^ visual, CompositionGraphicsDevice^ graphicsDevice, int w, int h, DirectXPixelFormat pixelFormat, DirectXAlphaMode alphaMode);
-    };
-
     //TODO: add multi-monitor support
     //TODO: handle theming properly
 
@@ -183,20 +87,21 @@ namespace TenMica
         Microsoft::UI::Windowing::AppWindow^ appWindow;
         Windows::UI::Composition::Visual^ wndVisual;
         ICompositionSupportsSystemBackdrop^ backdrop;
+        property SystemBackdrops::SystemBackdropConfiguration^ backdropConfig;
         XamlRoot^ xamlRoot;
 
         HWND cHwnd{ 0 };
         //Window^ cWindow;
         HTHUMBNAIL hThumbWindow = NULL;
 
-        Windows::Foundation::EventRegistrationToken OnActivatedCookie;
+        //Windows::Foundation::EventRegistrationToken OnActivatedCookie;
         Windows::Foundation::EventRegistrationToken OnColorValuesChangedCookie;
         Windows::Foundation::EventRegistrationToken OnHighContrastChangedCookie;
         Windows::Foundation::EventRegistrationToken OnEnergySaverStatusChangedCookie;
         Windows::Foundation::EventRegistrationToken OnCompositionCapabilitiesChangedCookie;
         Windows::Foundation::EventRegistrationToken OnWindowPositionChangedCookie;
         //Windows::Foundation::EventRegistrationToken OnDisplayChangedCookie;
-        Windows::Foundation::EventRegistrationToken FrameArrivedCookie;
+        //Windows::Foundation::EventRegistrationToken FrameArrivedCookie;
 
         ComPtr<ID3D11Device> direct3dDevice;
         ComPtr<IDXGIDevice2> dxgiDevice;
@@ -210,12 +115,12 @@ namespace TenMica
         Windows::UI::Composition::CompositionBrush^ CreateCrossFadeEffectBrush(Windows::UI::Composition::Compositor^ compositor, Windows::UI::Composition::CompositionBrush^ from, Windows::UI::Composition::CompositionBrush^ to);
         Windows::UI::Composition::ScalarKeyFrameAnimation^ CreateCrossFadeAnimation(Windows::UI::Composition::Compositor^ compositor);
         void UpdateBrush();
-        void OnActivated(Object^ sender, Microsoft::UI::Xaml::WindowActivatedEventArgs^ args);
+        //void OnActivated(Object^ sender, Microsoft::UI::Xaml::WindowActivatedEventArgs^ args);
         void OnColorValuesChanged(UISettings^ sender, Object^ args);
         void OnHighContrastChanged(AccessibilitySettings^ sender, Platform::Object^ args);
         void OnEnergySaverStatusChanged(Platform::Object^ sender, Platform::Object^ e);
         void OnCompositionCapabilitiesChanged(CompositionCapabilities^ sender, Platform::Object^ args);
-        void OnWindowPositionChanged(IInternalCoreWindow2^ window, Platform::Object^ args);
+        //void OnWindowPositionChanged(IInternalCoreWindow2^ window, Platform::Object^ args);
         //void OnDisplayChanged(Windows::UI::Core::CoreWindow^ sender, Platform::Object^ args);
         void OnAppWindowChanged(Microsoft::UI::Windowing::AppWindow^ sender, AppWindowChangedEventArgs^ args);
         Windows::UI::Composition::Compositor^ TenMicaBackdrop::InitializeInteropCompositor(IUnknown* d2dDevice);
@@ -226,7 +131,6 @@ namespace TenMica
         property bool IsThemeForced { bool get(); void set(bool value); }
         property bool EnabledInActivatedNotForeground { bool get(); void set(bool value); }
         property ApplicationTheme ForcedTheme { ApplicationTheme get(); void set(ApplicationTheme value); }
-        property Microsoft::UI::Composition::SystemBackdrops::SystemBackdropConfiguration^ backdropConfig;
     protected:
         virtual void OnTargetConnected(ICompositionSupportsSystemBackdrop^ connectedTarget, XamlRoot^ xamlRoot) override;
         virtual void OnTargetDisconnected(ICompositionSupportsSystemBackdrop^ disconnectedTarget) override;
