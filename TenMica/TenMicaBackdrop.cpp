@@ -540,7 +540,7 @@ void TenMicaBackdrop::OnDefaultSystemBackdropConfigurationChanged(ICompositionSu
 	backdropConfig = GetDefaultSystemBackdropConfiguration(target, xamlRootObj);
 	xamlRootObj->Content->DispatcherQueue->TryEnqueue(Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, ref new Microsoft::UI::Dispatching::DispatcherQueueHandler([this]()
 		{
-			var activated = backdropConfig->IsInputActive;
+			var activated = backdropConfig->IsInputActive || enableInActivatedNotForeground;
 			if (windowActivated && activated == windowActivated)
 			{
 				return;
