@@ -45,7 +45,7 @@ https://github.com/ahmed605/10Mica/assets/34550324/8b8bc16f-5399-4cc1-947b-77ab8
 
 
 > **Note**
-> 10Mica is currently supports 15063+ on the UWP version and 18362+ on the WASDK version.
+> 10Mica currently supports 15063+ on the UWP version and 18362+ on the WASDK version.
 
 ## Customers
 
