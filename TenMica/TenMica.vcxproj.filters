@@ -15,7 +15,7 @@
     <ClInclude Include="TenMicaBrush.h" />
     <ClInclude Include="DwmThumbnail.h" />
     <ClInclude Include="dcomp.local.h" />
-    <ClInclude Include="CompHelper.h" />
+    <ClInclude Include="Helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

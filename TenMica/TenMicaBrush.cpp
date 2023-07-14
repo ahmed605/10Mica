@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "TenMicaBrush.h"
-#include <CompHelper.h>
+#include <Helpers.h>
 using namespace Windows::ApplicationModel;
 using namespace Windows::System::Power;
 
@@ -82,8 +82,13 @@ void TenMicaBrush::Init()
 			surface->SourceVisual = nullptr;
 			delete surface;
 			surface = nullptr;
-			delete visual;
-			visual = nullptr;
+
+			if (visual)
+			{
+				// We need an additional Release
+				reinterpret_cast<IUnknown*>(visual)->Release();
+				visual = nullptr;
+			}
 		} catch (...) { }
 	}
 
@@ -93,7 +98,6 @@ void TenMicaBrush::Init()
 
 	var brushRaw = compositor->CreateSurfaceBrush(surface);
 	brushRaw->Stretch = CompositionStretch::None;
-
 
 	// Blur
 	var blurEffect = ref new GaussianBlurEffect();
@@ -112,17 +116,28 @@ void TenMicaBrush::Init()
 ::CompositionBrush^ TenMicaBrush::BuildMicaEffectBrushLegacy(Compositor^ compositor, IDCompositionVisual2* src, Color tintColor, float tintOpacity, float luminosityOpacity, SIZE size)
 {
 	ComPtr<IDCompositionDevice3> device;
-	//ComPtr<IDCompositionDesktopDeviceRestricted> deviceRestricted;
+	//ComPtr<IDCompositionDesktopDeviceRestricted> deviceRestricted; // For Win11 testing
 	
 	ComPtr<ABI::Windows::UI::Composition::IVisual> visualRaw;
 	src->QueryInterface(visualRaw.GetAddressOf());
 	auto vis = reinterpret_cast<Visual^>(visualRaw.Get());
 
 	(reinterpret_cast<IInspectable*>(compositor))->QueryInterface(device.GetAddressOf());
-	//device.As(&deviceRestricted);
+	//device.As(&deviceRestricted); // For Win11 testing
 	auto functions = GetFloodEffectAndVisualSurfaceFunctions(device.Get());
+
+	auto floodThisPtr = std::get<0>(functions);
+	auto surfaceThisPtr = std::get<1>(functions);
 	auto CreateFloodEffect = std::get<CreateFloodEffectFunc>(functions);
 	auto CreateVisualSurface = std::get<CreateVisualSurfaceFunc>(functions);
+
+	if (!CreateFloodEffect || !CreateVisualSurface || !floodThisPtr || !surfaceThisPtr)
+	{
+		auto funcName = (!CreateFloodEffect || !floodThisPtr) && CreateVisualSurface && surfaceThisPtr ? "CreateFloodEffect" : ((!CreateFloodEffect || !floodThisPtr) ? "CreateFloodEffect and CreateVisualSurface" : "CreateVisualSurface");
+		OutputFormattedString("[10Mica] Failed to determine memory address of %s function(s)\r\n", funcName);
+
+		return nullptr;
+	}
 
 	// Tint Color.
 
@@ -130,8 +145,8 @@ void TenMicaBrush::Init()
 	D2D1_VECTOR_4F tintColorLuminosity = { tintColor.R / 255.0f, tintColor.G / 255.0f, tintColor.B / 255.0f, luminosityOpacity };
 	D2D1_VECTOR_4F tintColorOpacity = { tintColor.R / 255.0f, tintColor.G / 255.0f, tintColor.B / 255.0f, tintOpacity };
 
-	//deviceRestricted->CreateFloodEffect(tintOpacityEffect.GetAddressOf());
-	CreateFloodEffect(std::get<0>(functions), tintOpacityEffect.GetAddressOf());
+	//deviceRestricted->CreateFloodEffect(tintOpacityEffect.GetAddressOf()); // For Win11 testing
+	CreateFloodEffect(floodThisPtr, tintOpacityEffect.GetAddressOf());
 	tintOpacityEffect->SetColor(tintColorOpacity);
 
 	// Apply Luminosity:
@@ -139,8 +154,8 @@ void TenMicaBrush::Init()
 	// Luminosity Color.
 	ComPtr<IDCompositionFloodEffect> luminosityOpacityEffect;
 
-	//deviceRestricted->CreateFloodEffect(luminosityOpacityEffect.GetAddressOf());
-	CreateFloodEffect(std::get<0>(functions), luminosityOpacityEffect.GetAddressOf());
+	//deviceRestricted->CreateFloodEffect(luminosityOpacityEffect.GetAddressOf()); // For Win11 testing
+	CreateFloodEffect(floodThisPtr, luminosityOpacityEffect.GetAddressOf());
 	luminosityOpacityEffect->SetColor(tintColorLuminosity);
 
 	ComPtr<IDCompositionGaussianBlurEffect> blurEffect;
@@ -171,19 +186,14 @@ void TenMicaBrush::Init()
 	{
 		try
 		{
-			Visual^ visual;
-			visual = surfaceLegacy->Source;
-
 			surfaceLegacy->Source = nullptr;
 			delete surfaceLegacy;
 			surfaceLegacy = nullptr;
-			delete visual;
-			visual = nullptr;
 		}
 		catch (...) {}
 	}
 
-	surfaceLegacy = GetVisualSurface(std::get<1>(functions), CreateVisualSurface);
+	surfaceLegacy = GetVisualSurface(surfaceThisPtr, CreateVisualSurface);
 	surfaceLegacy->Source = vis;
 	surfaceLegacy->SourceRectangleRight = size.cx;
 	surfaceLegacy->SourceRectangleBottom = size.cy;
@@ -191,8 +201,8 @@ void TenMicaBrush::Init()
 	var brushRaw = compositor->CreateSurfaceBrush((ICompositionSurface^)surfaceLegacy);
 	brushRaw->Stretch = CompositionStretch::None;
 
-	((IUnknown*)std::get<0>(functions))->Release();
-	((IUnknown*)std::get<1>(functions))->Release();
+	((IUnknown*)floodThisPtr)->Release();
+	((IUnknown*)surfaceThisPtr)->Release();
 
 	return brushRaw;
 }
@@ -217,9 +227,7 @@ void TenMicaBrush::UpdateVisual(RECT rect)
 void TenMicaBrush::OnConnected()
 {
 	if (CompositionBrush != nullptr) return;
-
 	if (DesignMode::DesignModeEnabled) return;
-
 	if (Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamily != "Windows.Desktop") return;
 
 	cWindow = CoreWindow::GetForCurrentThread(); // Assuming we use CoreWindow
@@ -259,13 +267,14 @@ void TenMicaBrush::OnConnected()
 	OnCompositionCapabilitiesChangedCookie = CompositionCapabilities::GetForCurrentView()->Changed += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Composition::CompositionCapabilities^, Platform::Object^>(this, &TenMica::TenMicaBrush::OnCompositionCapabilitiesChanged);
 	OnEnergySaverStatusChangedCookie = PowerManager::EnergySaverStatusChanged += ref new Windows::Foundation::EventHandler<Platform::Object^>(this, &TenMica::TenMicaBrush::OnEnergySaverStatusChanged);
 
-	IInternalCoreWindow2^ internalW = (IInternalCoreWindow2^)coreWnd; // Pure black magic
-
 	// Syncing!!
-	OnWindowPositionChangedCookie = internalW->WindowPositionChanged += ref new TypedEventHandler<IInternalCoreWindow2^, Platform::Object^>(this, &TenMicaBrush::OnWindowPositionChanged);
+	IInternalCoreWindow2^ internalW2 = dynamic_cast<IInternalCoreWindow2^>(coreWnd); // Pure black magic
+	if (internalW2)
+		OnWindowPositionChangedCookie = internalW2->WindowPositionChanged += ref new TypedEventHandler<IInternalCoreWindow2^, Platform::Object^>(this, &TenMicaBrush::OnWindowPositionChanged);
 
-	IInternalCoreWindow^ internalW1 = (IInternalCoreWindow^)coreWnd; // Pure blue magic
-	OnDisplayChangedCookie = internalW1->DisplayChanged += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Core::CoreWindow^, Platform::Object^>(this, &TenMica::TenMicaBrush::OnDisplayChanged);
+	IInternalCoreWindow^ internalW1 = dynamic_cast<IInternalCoreWindow^>(coreWnd); // Pure blue magic
+	if (internalW1)
+		OnDisplayChangedCookie = internalW1->DisplayChanged += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Core::CoreWindow^, Platform::Object^>(this, &TenMica::TenMicaBrush::OnDisplayChanged);
 }
 
 void TenMicaBrush::OnDisplayChanged(Windows::UI::Core::CoreWindow^ sender, Platform::Object^ args)
@@ -366,9 +375,7 @@ ScalarKeyFrameAnimation^ TenMicaBrush::CreateCrossFadeAnimation(Compositor^ comp
 void TenMicaBrush::UpdateBrush()
 {
 	if (uiSettings == nullptr || accessibilitySettings == nullptr)
-	{
 		return;
-	}
 
 	bool useSolidColorFallback = !windowActivated || fastEffects == false || energySaver == true || !uiSettings->AdvancedEffectsEnabled;
 
@@ -389,13 +396,10 @@ void TenMicaBrush::UpdateBrush()
 	::CompositionBrush^ newBrush;
 
 	if (useSolidColorFallback)
-	{
 		newBrush = compositor->CreateColorBrush(tintColor);
-	}
 	else
 	{
 		CoreWindow^ coreWnd = cWindow; // Assuming we use CoreWindow
-
 		HWND targetWindow = (HWND)FindWindow(L"Progman", NULL); // Progman is still the name of the Desktop window :))))
 
 		SIZE windowSize{};
@@ -423,7 +427,13 @@ void TenMicaBrush::UpdateBrush()
 
 		if (!legacyMode || windowVisualLegacy == nullptr)
 		{
-			auto result = lDwmpCreateSharedThumbnailVisual(legacyMode ? cHwnd : GetParent(cHwnd), targetWindow, 2, &thumb, dcompDevice.Get(), (void**)windowVisual.GetAddressOf(), &hThumbWindow);
+			HRESULT result = lDwmpCreateSharedThumbnailVisual(legacyMode ? cHwnd : GetParent(cHwnd), targetWindow, 2, &thumb, dcompDevice.Get(), (void**)windowVisual.GetAddressOf(), &hThumbWindow);
+			if (result != S_OK)
+			{
+				OutputFormattedString("[10Mica] The call to DwmpCreateSharedThumbnailVisual failed with %X, this often happens when the brush is created before the window is activated or shown.\r\n", result);
+				return;
+			}
+
 			windowVisualLegacy = windowVisual;
 		}
 		else
@@ -438,9 +448,7 @@ void TenMicaBrush::UpdateBrush()
 			newBrush = BuildMicaEffectBrush(compositor, visual, tintColor, tintOpacity, 1.0f, windowSize);
 		}
 		else
-		{
 			newBrush = BuildMicaEffectBrushLegacy(compositor, windowVisual.Get(), tintColor, tintOpacity, 1.0f, windowSize);
-		}
 
 		RECT rect;
 		GetWindowRect(cHwnd, &rect);
@@ -453,12 +461,11 @@ void TenMicaBrush::UpdateBrush()
 	{
 		// Set new brush directly
 		if (oldBrush != nullptr)
-		{
 			delete oldBrush;
-		}
+
 		CompositionBrush = newBrush;
 	}
-	else
+	else if (oldBrush && newBrush)
 	{
 		// Crossfade
 		::CompositionBrush^ crossFadeBrush = CreateCrossFadeEffectBrush(compositor, oldBrush, newBrush);
@@ -490,11 +497,13 @@ void TenMicaBrush::OnDisconnected()
 			if (cWindow != null)
 			{
 				cWindow->Activated -= OnActivatedCookie;
-				IInternalCoreWindow2^ internalW = (IInternalCoreWindow2^)cWindow;
-				internalW->WindowPositionChanged -= OnWindowPositionChangedCookie;
+				IInternalCoreWindow2^ internalW2 = dynamic_cast<IInternalCoreWindow2^>(cWindow);
+				if (internalW2)
+					internalW2->WindowPositionChanged -= OnWindowPositionChangedCookie;
 
-				IInternalCoreWindow^ internalW1 = (IInternalCoreWindow^)cWindow;
-				internalW1->DisplayChanged -= OnDisplayChangedCookie;
+				IInternalCoreWindow^ internalW1 = dynamic_cast<IInternalCoreWindow^>(cWindow);
+				if (internalW1)
+					internalW1->DisplayChanged -= OnDisplayChangedCookie;
 
 				cWindow = null;
 			}
@@ -520,15 +529,19 @@ void TenMicaBrush::OnDisconnected()
 				surface->SourceVisual = null;
 				delete surface;
 				surface = null;
-				visual = null;
+
+				if (visual)
+				{
+					// We need an additional Release
+					reinterpret_cast<IUnknown*>(visual)->Release();
+					visual = null;
+				}
 			}
 			else
 			{
-				Visual^ visual = surfaceLegacy->Source;
 				surfaceLegacy->Source = null;
 				delete surfaceLegacy;
 				surfaceLegacy = null;
-				visual = null;
 			}
 
 			lDwmUnregisterThumbnail(hThumbWindow);

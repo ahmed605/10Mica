@@ -1,7 +1,9 @@
 #pragma once
 
-#include <dcomp.local.h>
 #include <tuple>
+#include <vector>
+#include <string>
+#include <dcomp.local.h>
 
 typedef HRESULT(WINAPI* CreateFloodEffectFunc)(
 	IN void* thisPtr, OUT IDCompositionFloodEffect** floodEffect);
@@ -28,32 +30,30 @@ inline std::tuple<void*, void*, CreateFloodEffectFunc, CreateVisualSurfaceFunc> 
 	CreateFloodEffectFunc floodEffectFunc = nullptr;
 	CreateVisualSurfaceFunc visualSurfaceFunc = nullptr;
 
-	if (device->QueryInterface(IID_IDCompositionDesktopDevicePartner3_1703, (void**)&dStruct) == S_OK) // 1703
+	if (device->QueryInterface(IID_IDCompositionDesktopDevicePartner3_1703, (void**)&dStruct) == S_OK // 1703
+	 && device->QueryInterface(IID_ICompositorPartner2_1703, (void**)&cStruct) == S_OK)
 	{
 		floodEffectFunc = (CreateFloodEffectFunc)dStruct->vtbl[66];
-
-		device->QueryInterface(IID_ICompositorPartner2_1703, (void**)&cStruct);
 		visualSurfaceFunc = (CreateVisualSurfaceFunc)cStruct->vtbl[6];
 	}
 	else if (device->QueryInterface(IID_IDCompositionDesktopDevicePartner5_1803, (void**)&dStruct) == S_OK) // 1803 - 1809
 	{
 		floodEffectFunc = (CreateFloodEffectFunc)dStruct->vtbl[65];
 
-		device->QueryInterface(IID_ICompositorPartner2_1803, (void**)&cStruct);
+		if (device->QueryInterface(IID_ICompositorPartner2_1803, (void**)&cStruct) == S_OK)
+		{
+			wchar_t* end;
+			auto familyVersion = Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamilyVersion;
+			auto v = wcstoull(familyVersion->Data(), &end, 10);
 
-		wchar_t* end;
-		auto familyVersion = Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamilyVersion;
-		auto v = wcstoull(familyVersion->Data(), &end, 10);
-
-		auto build = (v & 0x00000000FFFF0000L) >> 16;
-		visualSurfaceFunc = (CreateVisualSurfaceFunc)cStruct->vtbl[build >= 17763 ? 22 : 19];
+			auto build = (v & 0x00000000FFFF0000L) >> 16;
+			visualSurfaceFunc = (CreateVisualSurfaceFunc)cStruct->vtbl[build >= 17763 ? 22 : 19];
+		}
 	}
-	else // 1709
+	else if (device->QueryInterface(IID_IDCompositionDesktopDevicePartner4_1709, (void**)&dStruct) == S_OK // 1709
+		  && device->QueryInterface(IID_ICompositorPartner2_1703, (void**)&cStruct) == S_OK)
 	{
-		device->QueryInterface(IID_IDCompositionDesktopDevicePartner4_1709, (void**)&dStruct);
 		floodEffectFunc = (CreateFloodEffectFunc)dStruct->vtbl[65];
-
-		device->QueryInterface(IID_ICompositorPartner2_1703, (void**)&cStruct);
 		visualSurfaceFunc = (CreateVisualSurfaceFunc)cStruct->vtbl[9];
 	}
 
@@ -66,4 +66,29 @@ inline ICompositionVisualSurfaceLegacy^ GetVisualSurface(void* thisPtr, CreateVi
 	func(thisPtr, &surface);
 
 	return surface;
+}
+ 
+// https://stackoverflow.com/a/57551892/11547162
+inline void OutputFormattedString(const char* format, ...)
+{
+	// initialize use of the variable argument array
+	va_list vaArgs;
+	va_start(vaArgs, format);
+
+	// reliably acquire the size
+	// from a copy of the variable argument array
+	// and a functionally reliable call to mock the formatting
+	va_list vaArgsCopy;
+	va_copy(vaArgsCopy, vaArgs);
+	const int iLen = std::vsnprintf(NULL, 0, format, vaArgsCopy);
+	va_end(vaArgsCopy);
+
+	// return a formatted string without risking memory mismanagement
+	// and without assuming any compiler or platform specific behavior
+	std::vector<char> zc(iLen + 1);
+	std::vsnprintf(zc.data(), zc.size(), format, vaArgs);
+	va_end(vaArgs);
+	std::string strText(zc.data(), iLen);
+
+	OutputDebugStringA(strText.c_str());
 }

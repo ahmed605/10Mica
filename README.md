@@ -1,8 +1,11 @@
 # 10Mica
 [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) but for Windows 10!
 
+> **Note**
+> While the UWP version is experimental it's safe to be used in production, it's only marked as experimental because not all planned features are implemented yet and the API design isn't final but there shouldn't be any major breaking changes.
+
 > **Warning**
-> The code is still messy, incomplete, full of duplications, and not ready to be used in production yet
+> The code of the WASDK version is still messy, incomplete, full of duplications, and not ready to be used in production yet.
 
 ## Media
 https://github.com/ahmed605/10Mica/assets/34550324/8b8bc16f-5399-4cc1-947b-77ab807bc6de

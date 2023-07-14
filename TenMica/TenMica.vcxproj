@@ -271,7 +271,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CompHelper.h" />
+    <ClInclude Include="Helpers.h" />
     <ClInclude Include="dcomp.local.h" />
     <ClInclude Include="DwmThumbnail.h" />
     <ClInclude Include="pch.h" />
