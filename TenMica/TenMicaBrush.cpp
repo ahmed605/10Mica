@@ -627,7 +627,7 @@ void TenMicaBrush::OnElementConnected(DependencyObject^ element)
 		if (CompositionBrush)
 			OnDisconnected();
 
-		ApplyMicaToBackground(element);
+		Microsoft::UI::Xaml::Controls::BackdropMaterial::SetApplyToRootOrPageBackground(dynamic_cast<Control^>(element), true);
 
 		FallbackColor = Colors::Transparent;
 	}

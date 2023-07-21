@@ -11,9 +11,6 @@ typedef HRESULT(WINAPI* CreateFloodEffectFunc)(
 typedef HRESULT(WINAPI* CreateVisualSurfaceFunc)(
 	IN void* thisPtr, OUT ICompositionVisualSurfaceLegacy^* visualSurface);
 
-typedef HRESULT(WINAPI* SetApplyToRootOrPageBackgroundFunc)(
-	IN void* thisPtr, IN Windows::UI::Xaml::Controls::Control^ element, bool value);
-
 const GUID IID_IDCompositionDesktopDevicePartner3_1703 = { 0x0ab6bdb3, 0x4d49, 0x46a8, { 0xb9, 0x0b, 0x1a, 0x86, 0xb0, 0xcd, 0x4e, 0x41 } };
 const GUID IID_IDCompositionDesktopDevicePartner4_1709 = { 0x0D2037FF5, 0x0F28, 0x4D60, { 0xAC, 0x8D, 0xCE, 0xE2, 0x4C, 0xB0, 0x72, 0xE3 } };
 const GUID IID_IDCompositionDesktopDevicePartner5_1803 = { 0x0CB139649, 0x6D80, 0x48E7, { 0xB5, 0x4D, 9, 0x73, 0x7D, 0x84, 0xDB, 0x47 } };
@@ -78,21 +75,4 @@ inline bool VectorViewHasValue(Windows::Foundation::Collections::IVectorView<T>^
 		if (func(item)) return true;
 
 	return false;
-}
-
-inline void ApplyMicaToBackground(Windows::UI::Xaml::DependencyObject^ element, bool enabled = true)
-{
-	IID* iids;
-	ULONG count;
-
-	VtblStruct* backdropMaterial;
-	ComPtr<IInspectable> backdropMaterialRaw;
-
-	Windows::Foundation::GetActivationFactory(HStringReference(L"Microsoft.UI.Xaml.Controls.BackdropMaterial").Get(), &backdropMaterialRaw);
-	backdropMaterialRaw->GetIids(&count, &iids);
-
-	backdropMaterialRaw->QueryInterface(iids[2], (void**)&backdropMaterial);
-	((SetApplyToRootOrPageBackgroundFunc)backdropMaterial->vtbl[7])(backdropMaterial, (Windows::UI::Xaml::Controls::Control^)element, enabled);
-
-	((IUnknown*)backdropMaterial)->Release();
 }
