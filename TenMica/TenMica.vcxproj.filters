@@ -9,13 +9,15 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="TenMicaBrush.cpp" />
+    <ClCompile Include="CppHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="TenMicaBrush.h" />
     <ClInclude Include="DwmThumbnail.h" />
     <ClInclude Include="dcomp.local.h" />
-    <ClInclude Include="Helpers.h" />
+    <ClInclude Include="WindowsRuntimeHelpers.h" />
+    <ClInclude Include="CppHelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

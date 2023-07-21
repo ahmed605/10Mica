@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
+#include "CppHelpers.h"
 #include "TenMicaBrush.h"
-#include <Helpers.h>
+#include "WindowsRuntimeHelpers.h"
 using namespace Windows::ApplicationModel;
 using namespace Windows::System::Power;
 
@@ -26,6 +27,10 @@ void TenMicaBrush::Init()
 	//lSetWindowCompositionAttribute = (SetWindowCompositionAttribute)GetProcAddress("user32.dll", "SetWindowCompositionAttribute");
 
 	legacyMode = !Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(Compositor::typeid->FullName, "CreateVisualSurface");
+
+	fallbackToSystemMica =
+		Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(Compositor::typeid->FullName, "TryCreateBlurredWallpaperBackdropBrush")
+		&& VectorViewHasValue<Package^>(Package::Current->Dependencies, [](Package^ pkg) -> bool { return StringStartsWith(pkg->Id->Name->Data(), L"Microsoft.UI.Xaml.2") && (pkg->Id->Version.Major > 2 || pkg->Id->Version.Minor >= 60000); });
 }
 
 ::CompositionBrush^ TenMicaBrush::BuildMicaEffectBrush(Compositor^ compositor, Visual^ src, Color tintColor, float tintOpacity, float luminosityOpacity, SIZE size)
@@ -229,6 +234,8 @@ void TenMicaBrush::OnConnected()
 	if (CompositionBrush != nullptr) return;
 	if (DesignMode::DesignModeEnabled) return;
 	if (Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamily != "Windows.Desktop") return;
+	if (!Enabled) return;
+	if (FallbackToSystemMica && Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(Compositor::typeid->FullName, "TryCreateBlurredWallpaperBackdropBrush")) return;
 
 	cWindow = CoreWindow::GetForCurrentThread(); // Assuming we use CoreWindow
 	CoreWindow^ coreWnd = cWindow;
@@ -377,11 +384,19 @@ void TenMicaBrush::UpdateBrush()
 	if (uiSettings == nullptr || accessibilitySettings == nullptr)
 		return;
 
+	if (FallbackToSystemMica)
+	{
+		OnDisconnected();
+		FallbackColor = Colors::Transparent;
+
+		return;
+	}
+
 	bool useSolidColorFallback = !windowActivated || fastEffects == false || energySaver == true || !uiSettings->AdvancedEffectsEnabled;
 
 	var compositor = Window::Current->Compositor;
 
-	var isLightMode = isThemeForced ? ForcedTheme == ApplicationTheme::Light : Application::Current->RequestedTheme == ApplicationTheme::Light;
+	var isLightMode = ThemeForced ? ForcedTheme == ApplicationTheme::Light : Application::Current->RequestedTheme == ApplicationTheme::Light;
 	Color tintColor = isLightMode ? Color{ 255, 243, 243, 243 } : Color{ 255, 32, 32, 32 };
 	float tintOpacity = isLightMode ? 0.5f : 0.8f;
 
@@ -428,9 +443,10 @@ void TenMicaBrush::UpdateBrush()
 		if (!legacyMode || windowVisualLegacy == nullptr)
 		{
 			HRESULT result = lDwmpCreateSharedThumbnailVisual(legacyMode ? cHwnd : GetParent(cHwnd), targetWindow, 2, &thumb, dcompDevice.Get(), (void**)windowVisual.GetAddressOf(), &hThumbWindow);
+			if (legacyMode && result == E_INVALIDARG) result = lDwmpCreateSharedThumbnailVisual(GetParent(cHwnd), targetWindow, 2, &thumb, dcompDevice.Get(), (void**)windowVisual.GetAddressOf(), &hThumbWindow);
 			if (result != S_OK)
 			{
-				OutputFormattedString("[10Mica] The call to DwmpCreateSharedThumbnailVisual failed with %X, this often happens when the brush is created before the window is activated or shown.\r\n", result);
+				OutputFormattedString("[10Mica] The call to DwmpCreateSharedThumbnailVisual failed with 0x%X, this often happens when the brush is created before the window is activated or shown.\r\n", result);
 				return;
 			}
 
@@ -554,17 +570,46 @@ ApplicationTheme TenMicaBrush::ForcedTheme::get() { return forcedTheme; }
 void TenMicaBrush::ForcedTheme::set(ApplicationTheme value)
 {
 	forcedTheme = value;
-	isThemeForced = true;
+	ThemeForced = true;
 
 	UpdateBrush();
 }
 
-bool TenMicaBrush::IsThemeForced::get() { return isThemeForced; }
+bool TenMicaBrush::ThemeForced::get() { return isThemeForced; }
 
-void TenMicaBrush::IsThemeForced::set(bool value)
+void TenMicaBrush::ThemeForced::set(bool value)
 {
 	isThemeForced = value;
 	UpdateBrush();
+}
+
+bool TenMicaBrush::Enabled::get() { return isEnabled; }
+
+void TenMicaBrush::Enabled::set(bool value)
+{
+	isEnabled = value;
+	
+	if (!isEnabled)
+	{
+		OnDisconnected();
+		FallbackColor = Colors::Transparent;
+	}
+	else
+		OnConnected();
+}
+
+bool TenMicaBrush::FallbackToSystemMica::get() { return fallbackToSystemMica; }
+
+void TenMicaBrush::FallbackToSystemMica::set(bool value) 
+{
+	fallbackToSystemMica = 
+		value ? 
+		(
+			Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(Compositor::typeid->FullName, "TryCreateBlurredWallpaperBackdropBrush") 
+			&& VectorViewHasValue<Package^>(Package::Current->Dependencies, [](Package^ pkg) -> bool { return StringStartsWith(pkg->Id->Name->Data(), L"Microsoft.UI.Xaml.2") && (pkg->Id->Version.Major > 2 || pkg->Id->Version.Minor >= 60000); })
+			? value : false
+		) 
+		: value;
 }
 
 bool TenMicaBrush::EnabledInActivatedNotForeground::get() { return enableInActivatedNotForeground; }
@@ -573,4 +618,17 @@ void TenMicaBrush::EnabledInActivatedNotForeground::set(bool value)
 {
 	enableInActivatedNotForeground = value;
 	UpdateBrush();
+}
+
+void TenMicaBrush::OnElementConnected(DependencyObject^ element)
+{
+	if (FallbackToSystemMica && dynamic_cast<Control^>(element) != nullptr)
+	{
+		if (CompositionBrush)
+			OnDisconnected();
+
+		ApplyMicaToBackground(element);
+
+		FallbackColor = Colors::Transparent;
+	}
 }

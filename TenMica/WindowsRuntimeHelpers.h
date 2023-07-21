@@ -1,15 +1,18 @@
 #pragma once
 
 #include <tuple>
-#include <vector>
-#include <string>
 #include <dcomp.local.h>
+
+using namespace Microsoft::WRL::Wrappers;
 
 typedef HRESULT(WINAPI* CreateFloodEffectFunc)(
 	IN void* thisPtr, OUT IDCompositionFloodEffect** floodEffect);
 
 typedef HRESULT(WINAPI* CreateVisualSurfaceFunc)(
 	IN void* thisPtr, OUT ICompositionVisualSurfaceLegacy^* visualSurface);
+
+typedef HRESULT(WINAPI* SetApplyToRootOrPageBackgroundFunc)(
+	IN void* thisPtr, IN Windows::UI::Xaml::Controls::Control^ element, bool value);
 
 const GUID IID_IDCompositionDesktopDevicePartner3_1703 = { 0x0ab6bdb3, 0x4d49, 0x46a8, { 0xb9, 0x0b, 0x1a, 0x86, 0xb0, 0xcd, 0x4e, 0x41 } };
 const GUID IID_IDCompositionDesktopDevicePartner4_1709 = { 0x0D2037FF5, 0x0F28, 0x4D60, { 0xAC, 0x8D, 0xCE, 0xE2, 0x4C, 0xB0, 0x72, 0xE3 } };
@@ -67,28 +70,29 @@ inline ICompositionVisualSurfaceLegacy^ GetVisualSurface(void* thisPtr, CreateVi
 
 	return surface;
 }
- 
-// https://stackoverflow.com/a/57551892/11547162
-inline void OutputFormattedString(const char* format, ...)
+
+template <typename T>
+inline bool VectorViewHasValue(Windows::Foundation::Collections::IVectorView<T>^ view, bool func(T))
 {
-	// initialize use of the variable argument array
-	va_list vaArgs;
-	va_start(vaArgs, format);
+	for (T item : view)
+		if (func(item)) return true;
 
-	// reliably acquire the size
-	// from a copy of the variable argument array
-	// and a functionally reliable call to mock the formatting
-	va_list vaArgsCopy;
-	va_copy(vaArgsCopy, vaArgs);
-	const int iLen = std::vsnprintf(NULL, 0, format, vaArgsCopy);
-	va_end(vaArgsCopy);
+	return false;
+}
 
-	// return a formatted string without risking memory mismanagement
-	// and without assuming any compiler or platform specific behavior
-	std::vector<char> zc(iLen + 1);
-	std::vsnprintf(zc.data(), zc.size(), format, vaArgs);
-	va_end(vaArgs);
-	std::string strText(zc.data(), iLen);
+inline void ApplyMicaToBackground(Windows::UI::Xaml::DependencyObject^ element, bool enabled = true)
+{
+	IID* iids;
+	ULONG count;
 
-	OutputDebugStringA(strText.c_str());
+	VtblStruct* backdropMaterial;
+	ComPtr<IInspectable> backdropMaterialRaw;
+
+	Windows::Foundation::GetActivationFactory(HStringReference(L"Microsoft.UI.Xaml.Controls.BackdropMaterial").Get(), &backdropMaterialRaw);
+	backdropMaterialRaw->GetIids(&count, &iids);
+
+	backdropMaterialRaw->QueryInterface(iids[2], (void**)&backdropMaterial);
+	((SetApplyToRootOrPageBackgroundFunc)backdropMaterial->vtbl[7])(backdropMaterial, (Windows::UI::Xaml::Controls::Control^)element, enabled);
+
+	((IUnknown*)backdropMaterial)->Release();
 }

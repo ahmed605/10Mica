@@ -83,12 +83,21 @@ namespace TenMica
         event TypedEventHandler<IInternalCoreWindow2^, CoreWindowEventArgs^>^ Destroying;
     };
 
+    ref class TenMicaBrush;
+
+    [Windows::Foundation::Metadata::ExclusiveTo(TenMicaBrush::typeid)]
+    [uuid("5f71d68f-445a-49db-82a7-e0e64d81d937")]
+    public interface class IXamlCompositionBrushBaseOverridesPrivate
+    {
+        void OnElementConnected(DependencyObject^ element);
+    };
+
     //TODO: inherit from IXamlCompositionBrushBaseOverridesPrivate to support non-full-window Mica scenarios
     //TODO: add support for AppWindow, do not assume CoreWindow
     //TODO: add multi-monitor support
     //TODO: handle theming properly
 
-    public ref class TenMicaBrush sealed : XamlCompositionBrushBase
+    public ref class TenMicaBrush sealed : XamlCompositionBrushBase, IXamlCompositionBrushBaseOverridesPrivate
     {
     private:
         DwmpQueryThumbnailType lDwmpQueryThumbnailType;
@@ -102,12 +111,15 @@ namespace TenMica
 
         ApplicationTheme forcedTheme;
         bool isThemeForced = false;
+        bool isEnabled = true;
+        bool enableInActivatedNotForeground = false;
+        bool fallbackToSystemMica = true;
+
         bool fastEffects;
         bool energySaver;
         UISettings^ uiSettings;
         AccessibilitySettings^ accessibilitySettings;
         bool windowActivated;
-        bool enableInActivatedNotForeground = false;
         HWND hwndHelper;
         bool legacyMode = false;
 
@@ -144,9 +156,13 @@ namespace TenMica
         TenMicaBrush();
         TenMicaBrush(ApplicationTheme ForcedTheme);
 
-        property bool IsThemeForced { bool get(); void set(bool value); }
+        property bool ThemeForced { bool get(); void set(bool value); }
+        property bool Enabled { bool get(); void set(bool value); }
+        property bool FallbackToSystemMica { bool get(); void set(bool value); }
         property bool EnabledInActivatedNotForeground { bool get(); void set(bool value); }
         property ApplicationTheme ForcedTheme { ApplicationTheme get(); void set(ApplicationTheme value); }
+
+        virtual void OnElementConnected(DependencyObject^ element);
     protected:
         virtual void OnConnected() override;
         virtual void OnDisconnected() override;
