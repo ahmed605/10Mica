@@ -1,7 +1,9 @@
 # 10Mica
 [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) but for Windows 10!
 
-![Nuget](https://img.shields.io/nuget/vpre/TenMica?style=for-the-badge&logo=nuget&color=dark%20green&link=https%3A%2F%2Fwww.nuget.org%2Fpackages%2FTenMica)
+<a href="https://www.nuget.org/packages/TenMica" alt="Nuget">
+<img alt="Nuget (with prereleases)" src="https://img.shields.io/nuget/vpre/TenMica?style=for-the-badge&logo=nuget&color=dark%20green"><br/>
+</a><br/>
 
 > **Note**
 > While the UWP version is experimental it's safe to be used in production, it's only marked as experimental because not all planned features are implemented yet and the API design isn't final but there shouldn't be any major breaking changes.
