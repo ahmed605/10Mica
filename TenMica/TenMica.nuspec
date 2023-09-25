@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>TenMica</id>
+    <version>1.0.0-alpha</version>
+    <title>10Mica</title>
+    <authors>Ahmed605</authors>
+	<owners>Ahmed605,Ahmed Walid</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <!--<icon>icon.png</icon>-->
+    <projectUrl>https://github.com/ahmed605/10Mica</projectUrl>
+	<repository type="git" url="https://github.com/ahmed605/10Mica.git"/>
+    <description>Mica but for Windows 10!</description>
+    <releaseNotes>Initial prerelease.</releaseNotes>
+    <tags>Mica UWP WinRT XAML Windows Windows10 Win10 Effects Universal Windows Platform UAP</tags>
+	<readme>docs\README.md</readme>
+	<dependencies>
+      <dependency id="Win2D.uwp" version="1.27.0" />
+    </dependencies>
+  </metadata>
+  
+  <files>
+	  <file src="..\README.md" target="docs\" />
+	  
+	  <file target="lib\uap10.0\TenMica.winmd"             src="..\Win32\Release\TenMica\TenMica.winmd" />
+      <file target="lib\netcoreapp3.0\TenMica.winmd"       src="..\Win32\Release\TenMica\TenMica.winmd" />
+      <file target="lib\net45\TenMica.winmd"       src="..\Win32\Release\TenMica\TenMica.winmd" />
+
+      <file target="runtimes\win10-arm64\native\TenMica.dll" src="..\ARM64\Release\TenMica\TenMica.dll" />
+      <file target="runtimes\win10-arm\native\TenMica.dll" src="..\ARM\Release\TenMica\TenMica.dll" />
+      <file target="runtimes\win10-x64\native\TenMica.dll" src="..\x64\Release\TenMica\TenMica.dll" />
+      <file target="runtimes\win10-x86\native\TenMica.dll" src="..\Win32\Release\TenMica\TenMica.dll" />
+  </files>
+</package>

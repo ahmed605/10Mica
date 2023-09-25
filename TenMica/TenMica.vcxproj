@@ -193,7 +193,6 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>/defaultlib:'vccorlib.lib' /defaultlib:'msvcrt.lib' %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>vccorlib.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -211,7 +210,6 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>/defaultlib:'vccorlib.lib' /defaultlib:'msvcrt.lib' %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>vccorlib.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -244,7 +242,6 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>/defaultlib:'vccorlib.lib' /defaultlib:'msvcrt.lib' %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>vccorlib.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -277,7 +274,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>/defaultlib:'vccorlib.lib' /defaultlib:'msvcrt.lib' %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>vccorlib.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

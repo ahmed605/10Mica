@@ -1,6 +1,8 @@
 # 10Mica
 [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) but for Windows 10!
 
+![Nuget](https://img.shields.io/nuget/vpre/TenMica?style=for-the-badge&logo=nuget&color=dark%20green&link=https%3A%2F%2Fwww.nuget.org%2Fpackages%2FTenMica)
+
 > **Note**
 > While the UWP version is experimental it's safe to be used in production, it's only marked as experimental because not all planned features are implemented yet and the API design isn't final but there shouldn't be any major breaking changes.
 
@@ -54,9 +56,9 @@ https://github.com/ahmed605/10Mica/assets/34550324/8b8bc16f-5399-4cc1-947b-77ab8
 
 ### Oxidized
 
-![Oxidized_but_something_is_different](https://github.com/ahmed605/10Mica/assets/34550324/95aca844-44eb-4c0f-b0e4-f2738a084053)
+![Oxidized_but_something_is_different](https://user-images.githubusercontent.com/34550324/238049331-95aca844-44eb-4c0f-b0e4-f2738a084053.png)
 
 
 ### [FlairMax](https://www.microsoft.com/store/apps/9PDZVJ34ZTXG)
 
-![Screenshot_2023-05-12_174506](https://github.com/ahmed605/10Mica/assets/34550324/c9803ed6-cf81-4101-bec1-470ea2c0f906)
+![Screenshot_2023-05-12_174506](https://user-images.githubusercontent.com/34550324/238049443-c9803ed6-cf81-4101-bec1-470ea2c0f906.png)
