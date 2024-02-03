@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<TenMica-Platform Condition="$(RuntimeIdentifier.EndsWith('-x64'))">x64</TenMica-Platform>
+		<TenMica-Platform Condition="$(RuntimeIdentifier.EndsWith('-x86'))">x86</TenMica-Platform>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(TenMica-Platform)' == ''">
+		<TenMica-Platform Condition="'$(Platform)' == 'Win32'">x86</TenMica-Platform>
+		<TenMica-Platform Condition="'$(Platform)' != 'Win32'">$(Platform)</TenMica-Platform>
+		<TenMica-Platform Condition="'$(Platform)' == 'AnyCPU'"></TenMica-Platform>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TenMicaWarnNoPlatform Condition="'$(TenMicaWarnNoPlatform)' == ''">true</TenMicaWarnNoPlatform>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Reference Include="TenMica">
+		  <HintPath>$(MSBuildThisFileDirectory)..\..\lib\uap10.0\TenMica.winmd</HintPath>
+		  <Implementation>TenMica.dll</Implementation>
+		</Reference>
+		<ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-$(TenMica-Platform)\native\TenMica.dll" Condition="'$(TenMica-Platform)' != ''" />
+  </ItemGroup>
+  
+  <Target Name="TenMicaWarnNoPlatform" BeforeTargets="BeforeBuild" Condition="'$(TenMica-Platform)' == '' and '$(TenMicaWarnNoPlatform)' == 'true'">
+    <Warning Text="TenMica.dll could not be copied because the AnyCPU platform is being used. Please specify a specific platform to copy this file." />
+  </Target>
+</Project>

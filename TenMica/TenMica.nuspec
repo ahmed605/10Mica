@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>TenMica</id>
-    <version>1.0.0-alpha</version>
+    <version>1.0.0-beta</version>
     <title>10Mica</title>
     <authors>Ahmed605</authors>
 	<owners>Ahmed605,Ahmed Walid</owners>
@@ -22,6 +22,10 @@
   
   <files>
 	  <file src="..\README.md" target="docs\" />
+	  
+	  <file target="build\native\TenMica.targets"                          src="nuget\TenMica-native.targets" />
+      <file target="build\netcoreapp3.0\TenMica.targets"                   src="nuget\TenMica-managed.targets" />
+      <file target="build\net45\TenMica.targets"                           src="nuget\TenMica-managed.targets" />
 	  
 	  <file target="lib\uap10.0\TenMica.winmd"             src="..\Win32\Release\TenMica\TenMica.winmd" />
       <file target="lib\netcoreapp3.0\TenMica.winmd"       src="..\Win32\Release\TenMica\TenMica.winmd" />
