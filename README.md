@@ -5,10 +5,10 @@
 <img alt="Nuget (with prereleases)" src="https://img.shields.io/nuget/vpre/TenMica?style=for-the-badge&logo=nuget&color=dark%20green"><br/>
 </a><br/>
 
-> **Note**
+> [!NOTE]
 > While the UWP version is experimental it's safe to be used in production, it's only marked as experimental because not all planned features are implemented yet and the API design isn't final but there shouldn't be any major breaking changes.
 
-> **Warning**
+> [!WARNING]
 > The code of the WASDK version is still messy, incomplete, full of duplications, and not ready to be used in production yet.
 
 ## Media
@@ -16,7 +16,7 @@ https://github.com/ahmed605/10Mica/assets/34550324/8b8bc16f-5399-4cc1-947b-77ab8
 
 ## Usage
 
-> **Note**
+> [!NOTE]
 > While the UWP example below set the brush on the `Page` element, it's **very** recommended to use it on the `Frame` element instead as you **can't** have more than one `TenMicaBrush` instance running, so using it on the `Frame` element assures that there's only one instance running. 
 
 ### UWP
@@ -51,7 +51,7 @@ https://github.com/ahmed605/10Mica/assets/34550324/8b8bc16f-5399-4cc1-947b-77ab8
 ```
 
 
-> **Note**
+> [!NOTE]
 > 10Mica currently supports 15063+ on the UWP version and 18362+ on the WASDK version.
 
 ## Customers
